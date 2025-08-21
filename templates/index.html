@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<form method="POST">
+    <input type="text" name="upi_id" placeholder="Search by UPI ID" value="{{ query_upi or '' }}">
+    <button type="submit">Search</button>
+</form>
+
+<h2>📋 Flagged Transactions ({{ transactions | length }})</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Time</th><th>Sender</th><th>Receiver</th><th>Amount</th><th>Device</th><th>Reason</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for txn in transactions %}
+        <tr>
+            <td>{{ txn.time }}</td>
+            <td>{{ txn.sender }}</td>
+            <td>{{ txn.receiver }}</td>
+            <td>₹{{ txn.amount }}</td>
+            <td>{{ txn.device }}</td>
+            <td>{{ txn.fraud_reason }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="pagination">
+  {% if page > 1 %}
+    <a href="/?page={{ page - 1 }}{% if query_upi %}&upi_id={{ query_upi }}{% endif %}">&laquo; Prev</a>
+  {% endif %}
+  <span>Page {{ page }} of {{ (total // per_page) + 1 }}</span>
+  {% if page * per_page < total %}
+    <a href="/?page={{ page + 1 }}{% if query_upi %}&upi_id={{ query_upi }}{% endif %}">Next &raquo;</a>
+  {% endif %}
+</div>
+
+<h2>📈 Charts</h2>
+<div class="chart-container">
+    <canvas id="fraudByDay" width="400" height="200"></canvas>
+    <canvas id="fraudByHour" width="400" height="200"></canvas>
+    <canvas id="fraudByDevice" width="400" height="200"></canvas>
+</div>
+
+<script>
+    new Chart(document.getElementById('fraudByDay'), {
+        type: 'bar',
+        data: { labels: {{ charts.day_labels|safe }}, datasets: [{ label: 'Fraud Count by Date', data: {{ charts.day_data|safe }}, backgroundColor: 'tomato' }] }
+    });
+    new Chart(document.getElementById('fraudByHour'), {
+        type: 'bar',
+        data: { labels: {{ charts.hour_labels|safe }}, datasets: [{ label: 'Fraud Count by Hour', data: {{ charts.hour_data|safe }}, backgroundColor: 'mediumseagreen' }] }
+    });
+    new Chart(document.getElementById('fraudByDevice'), {
+        type: 'bar',
+        data: { labels: {{ charts.device_labels|safe }}, datasets: [{ label: 'Fraud by Device', data: {{ charts.device_data|safe }}, backgroundColor: 'steelblue' }] }
+    });
+</script>
+
+{% endblock %}

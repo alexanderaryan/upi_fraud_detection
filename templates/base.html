@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}UPI Fraud Detection{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+        nav .left a, nav .right a { margin: 0 5px; }
+        nav button { padding:5px 10px; border:none; border-radius:4px; cursor:pointer; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>💸 UPI Fraud Detection</h1>
+        <nav>
+            <div class="left">
+                {% if session.get("role") == "admin" %}
+                    <a href="{{ url_for('index') }}"><button>🏠 Dashboard</button></a>
+
+                <a href="{{ url_for('test_fraud_check') }}"><button>🚀 Test Fraud API</button></a>
+                <a href="{{ url_for('all_transactions') }}"><button>📑 All Transactions</button></a>
+                {% endif %}
+            </div>
+            <div class="right">
+                {% if session.get("username") %}
+                    <span>👤 {{ session["username"] }} ({{ session["role"] }})</span>
+                    <a href="{{ url_for('logout') }}"><button>🔓 Logout</button></a>
+                {% else %}
+                    <a href="{{ url_for('login') }}"><button>🔑 Login</button></a>
+                    <a href="{{ url_for('signup') }}"><button>📝 Signup</button></a>
+                {% endif %}
+            </div>
+        </nav>
+        <hr>
+    </header>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <p class="{{ category }}">{{ msg }}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

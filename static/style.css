@@ -1,0 +1,148 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #f9f9f9;
+}
+
+h1, h2 {
+    color: #333;
+}
+
+form {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column; /* ensure elements stack vertically */
+    gap: 10px; /* spacing between fields */
+    max-width: 400px; /* center forms nicely */
+}
+
+/* Dashboard search form overrides */
+form.inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+}
+
+form.inline input[type="text"] {
+    width: 200px;
+    margin-right: 10px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="datetime-local"],
+select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 100%; /* make inputs full width in forms */
+    box-sizing: border-box;
+}
+
+button {
+    padding: 10px 15px;
+    font-size: 14px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background: white;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+}
+
+.pagination {
+    margin-top: 20px;
+}
+
+.pagination a {
+    padding: 5px 10px;
+    margin: 2px;
+    background-color: #eee;
+    text-decoration: none;
+    border-radius: 3px;
+}
+
+.chart-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* spacing between charts */
+    max-width: 600px;
+    margin: 30px auto;
+}
+
+canvas {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    align-items: center;
+}
+
+.left-buttons, .right-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background: #007bff;
+    color: white;
+}
+
+.navbar .brand {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.navbar button {
+    margin-left: 10px;
+    background: white;
+    color: #007bff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.navbar button:hover {
+    background: #f1f1f1;
+}
+
+.auth-container {
+    background: white;
+    max-width: 350px;
+    margin: 50px auto;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+

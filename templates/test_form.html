@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Fraud Test{% endblock %}
+{% block content %}
+
+<h2>🛡️ UPI Fraud Detection Test</h2>
+
+<form id="fraudForm">
+    <label>Sender UPI ID:</label>
+    <input type="text" name="sender" required placeholder="e.g. user@upi">
+
+    <label>Receiver UPI ID:</label>
+    <input type="text" name="receiver" required placeholder="e.g. merchant@okaxis">
+
+    <label>Amount:</label>
+    <input type="number" name="amount" required>
+
+    <label>Device:</label>
+    <select name="device">
+        <option value="Android">Android</option>
+        <option value="iOS">iOS</option>
+        <option value="Windows">Windows</option>
+        <option value="Linux">Linux</option>
+        <option value="Unknown">Unknown</option>
+    </select>
+
+    <label>Timestamp:</label>
+    <input type="datetime-local" name="timestamp" required>
+
+    <button type="submit">Check Fraud</button>
+</form>
+
+<div id="result"></div>
+
+<script>
+    document.getElementById("fraudForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = {
+            sender: formData.get("sender"),
+            receiver: formData.get("receiver"),
+            amount: parseFloat(formData.get("amount")),
+            device: formData.get("device"),
+            timestamp: new Date(formData.get("timestamp")).toISOString()
+        };
+
+        const response = await fetch("/api/check_fraud", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        const div = document.getElementById("result");
+
+        if (result.error) {
+            div.innerHTML = `<strong style="color: red;">Error:</strong> ${result.error}`;
+        } else {
+            div.innerHTML = `
+                <strong>Fraud Status:</strong> ${result.is_fraud ? '<span style="color: red;">FRAUD</span>' : '<span style="color: green;">LEGIT</span>'}<br>
+                <strong>Reason(s):</strong> ${result.reasons.join(", ")}
+            `;
+        }
+    });
+</script>
+
+{% endblock %}

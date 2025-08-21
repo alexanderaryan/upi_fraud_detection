@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}All Transactions{% endblock %}
+{% block content %}
+
+<h2>📑 All UPI Transactions ({{ total }})</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>Sender</th>
+            <th>Receiver</th>
+            <th>Amount</th>
+            <th>Device</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for txn in transactions %}
+        <tr>
+            <td>{{ txn.time }}</td>
+            <td>{{ txn.sender }}</td>
+            <td>{{ txn.receiver }}</td>
+            <td>₹{{ txn.amount }}</td>
+            <td>{{ txn.device }}</td>
+            <td>
+                {% if txn.fraud_reason %}
+                    <span style="color:red;">Fraud: {{ txn.fraud_reason }}</span>
+                {% else %}
+                    ✅ Legit
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<div class="pagination">
+    {% if page > 1 %}
+        <a href="{{ url_for('all_transactions', page=page-1) }}">&laquo; Prev</a>
+    {% endif %}
+    <span>Page {{ page }} of {{ (total // per_page) + 1 }}</span>
+    {% if page * per_page < total %}
+        <a href="{{ url_for('all_transactions', page=page+1) }}">Next &raquo;</a>
+    {% endif %}
+</div>
+
+{% endblock %}
