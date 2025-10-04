@@ -236,7 +236,7 @@ def check_fraud():
     # ------------------------
     # Log flagged transaction
     # ------------------------
-    data["checked_at"] = datetime.utcnow()
+    data["checked_at"] = datetime.datetime.now(datetime.UTC)
     data["is_fraud"] = is_fraud
     data["fraud_reasons"] = reasons
     flagged.insert_one(data)
