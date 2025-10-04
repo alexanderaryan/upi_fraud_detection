@@ -250,7 +250,7 @@ def check_fraud():
         print(f"🚫 Sender {sender} blocked for reasons: {reason_str}")
 
     # ------------------------
-    # Increment counter & retrain ML model
+    # Increment counter & retrain ML model after # of transactions
     # ------------------------
     if is_fraud:
         NEW_FLAGGED_COUNTER += 1
