@@ -34,9 +34,7 @@ FraudUPIProject/
 │
 ├── app.py                   # Flask app & REST API
 ├── ml_predictor.py          # ML model training + prediction
-├── adding_data_to_db.py     # One-time MongoDB setup script
-├── insert_sample_data.py    # Add fake/sample UPI transactions
-├── ml_predictor.py          # Validate ML predictions
+├── adding_data_to_db.py     # One-time MongoDB setup script & Add fake/sample UPI transactions
 ├── block_sender_db.py       # To block sender while detected of Fraud
 ├── fake_data.py             # To generate fake UPI data
 ├── retrain_model.py         # To retrain model after every new 500 transactions recorded in DB
