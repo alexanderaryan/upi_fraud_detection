@@ -6,6 +6,18 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 import joblib
 from datetime import datetime
+import logging
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,  # Could also be DEBUG for more detail
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[
+        logging.StreamHandler()  # Log to console
+    ]
+)
+
+logger = logging.getLogger("UPIFraudDetection")
 
 client = MongoClient("mongodb://localhost:27017/")
 db = client["upi_fraud_db"]
@@ -15,13 +27,13 @@ ENCODER_PATH = "device_encoder.pkl"
 
 
 def retrain_model():
-    print("🔄 Retraining ML model with latest transactions...")
+    logger.info("🔄 Retraining ML model with latest transactions...")
 
     transactions = pd.DataFrame(list(db.transactions.find()))
     flagged = pd.DataFrame(list(db.flagged_transactions.find()))
 
     if transactions.empty:
-        print("⚠️ No transactions found.")
+        logger.info("⚠️ No transactions found.")
         return
 
     # Merge with fraud labels
@@ -49,4 +61,4 @@ def retrain_model():
     # Save model & encoder
     joblib.dump(model, MODEL_PATH)
     joblib.dump(le_device, ENCODER_PATH)
-    print("✅ Model retrained and saved!")
+    logger.info("✅ Model retrained and saved!")
