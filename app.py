@@ -200,6 +200,16 @@ def check_fraud():
     reasons = []
 
     # ------------------------
+    # ML prediction
+    # ------------------------
+    try:
+        ml_fraud = predict_fraud_ml(data)
+        if ml_fraud:
+            reasons.append("Detected as fraud by ML model")
+    except Exception as e:
+        print("⚠️ ML prediction failed:", e)
+
+    # ------------------------
     # Rule-based checks
     # ------------------------
     BLACKLIST = {"scam@upi", "fraud123@okaxis", "spam@okhdfc"}
@@ -220,15 +230,6 @@ def check_fraud():
     if device not in allowed_devices:
         reasons.append("Unknown device")
 
-    # ------------------------
-    # ML prediction
-    # ------------------------
-    try:
-        ml_fraud = predict_fraud_ml(data)
-        if ml_fraud:
-            reasons.append("Detected as fraud by ML model")
-    except Exception as e:
-        print("⚠️ ML prediction failed:", e)
 
     is_fraud = len(reasons) > 0
 
