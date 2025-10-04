@@ -10,9 +10,7 @@ import os
 from functools import wraps
 
 from flask_bcrypt import Bcrypt
-
-
-
+from block_sender_db import is_sender_blocked, block_sender
 
 
 # Simple blacklist
@@ -196,6 +194,10 @@ def check_fraud():
     if sender in BLACKLIST or receiver in BLACKLIST:
         reasons.append("Blacklisted UPI ID")
 
+        # Step 1: Check MongoDB blocklist first
+    if is_sender_blocked(sender):
+        reasons.append(f"Transaction flagged: sender {sender} already blocked")
+
     # Rule 1: High amount
     if amount > 10000:
         reasons.append("High transaction amount")
@@ -210,6 +212,11 @@ def check_fraud():
         reasons.append("Unknown device")
 
     is_fraud = len(reasons) > 0
+
+    if is_fraud and not is_sender_blocked(sender):
+        # Join multiple reasons into one string
+        reason_str = "; ".join(reasons)
+        block_sender(sender, reason=reason_str)
 
     # Add metadata and log it
     data["checked_at"] = datetime.now()
