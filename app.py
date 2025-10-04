@@ -20,7 +20,7 @@ BLACKLIST = {"scam@upi", "fraud123@okaxis", "spam@okhdfc"}
 
 # Counter for periodic retraining
 NEW_FLAGGED_COUNTER = 0
-N_RETRAIN = 50  # retrain after every 50 flagged transactions
+N_RETRAIN = 500  # retrain after every 50 flagged transactions
 
 
 app = Flask(__name__)
