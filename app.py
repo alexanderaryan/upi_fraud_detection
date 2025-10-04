@@ -15,6 +15,20 @@ from retrain_model import retrain_model
 from ml_predictor import predict_fraud_ml
 
 
+import logging
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,  # Could also be DEBUG for more detail
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[
+        logging.StreamHandler()  # Log to console
+    ]
+)
+
+logger = logging.getLogger("UPIFraudDetection")
+
+
 # Simple blacklist
 BLACKLIST = {"scam@upi", "fraud123@okaxis", "spam@okhdfc"}
 
@@ -171,7 +185,7 @@ def index():
     results = list(flagged.find(query).skip(skip).limit(per_page))
     df = pd.DataFrame(results)
     charts = prepare_chart_data(df) if not df.empty else {}
-    print("CHART DATA:", charts)
+
 
     return render_template("index.html", transactions=results, charts=charts, query_upi=query_upi,
                            page=page, total=total, per_page=per_page)
@@ -207,7 +221,7 @@ def check_fraud():
         if ml_fraud:
             reasons.append("Detected as fraud by ML model")
     except Exception as e:
-        print("⚠️ ML prediction failed:", e)
+        logger.error("⚠️ ML prediction failed:", e)
 
     # ------------------------
     # Rule-based checks
@@ -247,7 +261,7 @@ def check_fraud():
     if is_fraud and not is_sender_blocked(sender):
         reason_str = "; ".join(reasons)
         block_sender(sender, reason=reason_str)
-        print(f"🚫 Sender {sender} blocked for reasons: {reason_str}")
+        logger.info(f"🚫 Sender {sender} blocked for reasons: {reason_str}")
 
     # ------------------------
     # Increment counter & retrain ML model after # of transactions
@@ -256,11 +270,11 @@ def check_fraud():
         NEW_FLAGGED_COUNTER += 1
 
     if NEW_FLAGGED_COUNTER >= N_RETRAIN:
-        print(f"🔄 Retraining ML model after {NEW_FLAGGED_COUNTER} flagged transactions...")
+        logger.info(f"🔄 Retraining ML model after {NEW_FLAGGED_COUNTER} flagged transactions...")
         try:
             retrain_model()
         except Exception as e:
-            print("⚠️ Retraining failed:", e)
+            logger.error("⚠️ Retraining failed:", e)
         NEW_FLAGGED_COUNTER = 0  # reset counter
 
     # ------------------------
@@ -309,4 +323,5 @@ def inject_user():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    logger.info("🚀 Starting UPI Fraud Detection Flask app...")
+    app.run(debug=False)
