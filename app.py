@@ -11,10 +11,17 @@ from functools import wraps
 
 from flask_bcrypt import Bcrypt
 from block_sender_db import is_sender_blocked, block_sender
+from retrain_model import retrain_model
+from ml_predictor import predict_fraud_ml
 
 
 # Simple blacklist
 BLACKLIST = {"scam@upi", "fraud123@okaxis", "spam@okhdfc"}
+
+# Counter for periodic retraining
+NEW_FLAGGED_COUNTER = 0
+N_RETRAIN = 50  # retrain after every 50 flagged transactions
+
 
 app = Flask(__name__)
 app.secret_key = "upi_fraud_detection"  # Replace with a strong secret in production!
@@ -173,14 +180,16 @@ def index():
 @app.route('/api/check_fraud', methods=['POST'])
 @limiter.limit("10/minute")
 def check_fraud():
+    global NEW_FLAGGED_COUNTER
+
     data = request.get_json()
 
-    # Extract fields
+    # Extract transaction fields
     sender = data.get("sender", "").lower()
     receiver = data.get("receiver", "").lower()
-    amount = data.get("amount")
-    device = data.get("device")
-    timestamp = data.get("timestamp")  # Expects ISO format: "2025-07-07T01:30:00"
+    amount = float(data.get("amount", 0))
+    device = data.get("device", "Unknown")
+    timestamp = data.get("timestamp", datetime.utcnow().isoformat())
 
     try:
         dt = datetime.fromisoformat(timestamp)
@@ -190,40 +199,72 @@ def check_fraud():
     hour = dt.hour
     reasons = []
 
-    # Rule 0: Blacklisted sender or receiver
+    # ------------------------
+    # Rule-based checks
+    # ------------------------
+    BLACKLIST = {"scam@upi", "fraud123@okaxis", "spam@okhdfc"}
+
     if sender in BLACKLIST or receiver in BLACKLIST:
         reasons.append("Blacklisted UPI ID")
 
-        # Step 1: Check MongoDB blocklist first
     if is_sender_blocked(sender):
-        reasons.append(f"Transaction flagged: sender {sender} already blocked")
+        reasons.append(f"Sender {sender} already blocked")
 
-    # Rule 1: High amount
     if amount > 10000:
         reasons.append("High transaction amount")
 
-    # Rule 2: Odd hour (0–4 AM)
     if hour < 5:
         reasons.append("Transaction during suspicious hours")
 
-    # Rule 3: Unrecognized device
     allowed_devices = ["Android", "iOS", "Windows", "Linux"]
     if device not in allowed_devices:
         reasons.append("Unknown device")
 
+    # ------------------------
+    # ML prediction
+    # ------------------------
+    try:
+        ml_fraud = predict_fraud_ml(data)
+        if ml_fraud:
+            reasons.append("Detected as fraud by ML model")
+    except Exception as e:
+        print("⚠️ ML prediction failed:", e)
+
     is_fraud = len(reasons) > 0
 
-    if is_fraud and not is_sender_blocked(sender):
-        # Join multiple reasons into one string
-        reason_str = "; ".join(reasons)
-        block_sender(sender, reason=reason_str)
-
-    # Add metadata and log it
-    data["checked_at"] = datetime.now()
+    # ------------------------
+    # Log flagged transaction
+    # ------------------------
+    data["checked_at"] = datetime.utcnow()
     data["is_fraud"] = is_fraud
     data["fraud_reasons"] = reasons
     flagged.insert_one(data)
 
+    # ------------------------
+    # Auto-block sender if fraud
+    # ------------------------
+    if is_fraud and not is_sender_blocked(sender):
+        reason_str = "; ".join(reasons)
+        block_sender(sender, reason=reason_str)
+        print(f"🚫 Sender {sender} blocked for reasons: {reason_str}")
+
+    # ------------------------
+    # Increment counter & retrain ML model
+    # ------------------------
+    if is_fraud:
+        NEW_FLAGGED_COUNTER += 1
+
+    if NEW_FLAGGED_COUNTER >= N_RETRAIN:
+        print(f"🔄 Retraining ML model after {NEW_FLAGGED_COUNTER} flagged transactions...")
+        try:
+            retrain_model()
+        except Exception as e:
+            print("⚠️ Retraining failed:", e)
+        NEW_FLAGGED_COUNTER = 0  # reset counter
+
+    # ------------------------
+    # Response
+    # ------------------------
     return jsonify({
         "is_fraud": is_fraud,
         "reasons": reasons if reasons else ["Legit transaction"]
