@@ -34,14 +34,19 @@ FraudUPIProject/
 │
 ├── app.py                   # Flask app & REST API
 ├── ml_predictor.py          # ML model training + prediction
-├── create_collections.py    # One-time MongoDB setup script
+├── adding_data_to_db.py     # One-time MongoDB setup script
 ├── insert_sample_data.py    # Add fake/sample UPI transactions
-├── test_ml_prediction.py    # Validate ML predictions
+├── ml_predictor.py          # Validate ML predictions
+├── block_sender_db.py       # To block sender while detected of Fraud
+├── fake_data.py             # To generate fake UPI data
+├── retrain_model.py         # To retrain model after every new 500 transactions recorded in DB
+├── train_fraud_model.py     # To Train the ML model with data from DB
 │
 ├── static/                  # CSS, JS, Chart.js assets
 ├── templates/               # Jinja2 HTML templates
 │
 ├── upi_transactions.csv     # Sample dataset
+│
 ├── fraud_model.pkl          # Trained ML model (auto-generated)
 ├── device_encoder.pkl       # Encoded device labels (auto-generated)
 │
@@ -72,7 +77,8 @@ docker run -d -p 27017:27017 --name mongodb mongo
 ### 3️⃣ Initialize Database and train ML Model
 
 ```bash
-python fake_data.py
+python fake_data.py 
+python adding_data_to_db.py
 python train_fraud_model.py
 ```
 
