@@ -5,7 +5,7 @@ from pymongo import MongoClient
 import pandas as pd
 from bson.json_util import dumps
 from bson.regex import Regex
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 from functools import wraps
 
@@ -250,7 +250,7 @@ def check_fraud():
     # ------------------------
     # Log flagged transaction
     # ------------------------
-    data["checked_at"] = datetime.datetime.now(datetime.UTC)
+    data["checked_at"] = datetime.now(timezone.utc)
     data["is_fraud"] = is_fraud
     data["fraud_reasons"] = reasons
     flagged.insert_one(data)
@@ -324,4 +324,4 @@ def inject_user():
 
 if __name__ == "__main__":
     logger.info("🚀 Starting UPI Fraud Detection Flask app...")
-    app.run(debug=False)
+    app.run(debug=True)
